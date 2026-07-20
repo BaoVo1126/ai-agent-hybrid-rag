@@ -2,16 +2,13 @@
 
 **A framework-agnostic AI agent that answers questions from any document you give it — with a built-in benchmark comparing three different reasoning strategies.**
 
-Drop a PDF, `.txt`, or `.md` file into `data/`, pick a strategy (ReAct / native function-calling / plan-and-execute), and ask questions through a CLI, a web UI, or the FastAPI backend directly. Runs fully offline in mock mode with zero setup, or against a real, free, locally-hosted model via [Ollama](https://ollama.com) by setting one environment variable — no API key, no cloud account, nothing to pay for.
+Drop a PDF, `.txt`, or `.md` file into `data/`, pick a strategy (ReAct / native function-calling / plan-and-execute), and ask questions through a CLI, a web UI, or the FastAPI backend directly. Runs fully offline in mock mode with zero setup, or against a real, free, locally-hosted model via [Ollama](https://ollama.com) by setting one environment variable.
 
 ![status](https://img.shields.io/badge/tests-31%20passing-brightgreen) ![python](https://img.shields.io/badge/python-3.11%2B-blue) ![mode](https://img.shields.io/badge/offline--first-yes-informational) ![cost](https://img.shields.io/badge/real--mode-free%20(Ollama)-success)
 
 ---
 
 ## Why this project exists
-
-This is a learning project built on the way to becoming an AI Engineer, focused specifically on **agents**: the piece that sits on top of retrieval (see the companion project [`rag-from-scratch`](../rag-from-scratch)) and turns "search + generate" into "reason, decide, act, and check your own work."
-
 The goal wasn't to pick *one* agent architecture and ship it — it was to build **one tool registry that three different reasoning strategies can share**, then measure the trade-off between them instead of just asserting it. That comparison is the centerpiece of this repo (`results/benchmark.md`), and it's meant to be re-run, re-argued with, and extended.
 
 ## What's actually in the box
@@ -90,8 +87,6 @@ uvicorn src.api.main:app --reload
 python scripts/run_benchmark.py
 ```
 
-All of the above runs **fully offline** — no install, no key, no account. To use a real model instead of the mock, for free, via [Ollama](https://ollama.com):
-
 ```bash
 # 1. Install Ollama: https://ollama.com/download, then start it
 ollama serve   # or just open the Ollama desktop app
@@ -107,8 +102,6 @@ export OLLAMA_MODEL=llama3.1   # must match what you pulled
 
 python scripts/run_agent_cli.py --strategy react
 ```
-
-Every downstream component (agents, API, benchmark) automatically switches from mock to real mode based solely on `LLM_BACKEND` — see `src/config.py::Settings.is_real_mode`. `OllamaLLMClient` talks to Ollama over plain HTTP using only the Python standard library, so there's no extra package to install either.
 
 ### Docker
 
@@ -190,5 +183,3 @@ Documented in detail, with the exact failure and fix, in [`docs/bugs-found.md`](
 ```bash
 pytest tests/ -v
 ```
-
-29 unit + integration tests plus 2 regression tests for the bugs above, all offline (mock mode) so CI never needs an API key.
