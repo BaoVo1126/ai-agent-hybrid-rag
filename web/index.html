@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent Lab — reasoning trace console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/web/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◇</span>
+        <div>
+          <h1>Agent Lab</h1>
+          <p class="tagline">one tool registry, three reasoning strategies, one document</p>
+        </div>
+      </div>
+      <div class="status" id="status-badge">checking mode…</div>
+    </header>
+
+    <main class="layout">
+      <section class="panel control-panel">
+        <h2>Session</h2>
+        <p class="hint">Chat history is saved to this session (Postgres when configured, in-memory otherwise).</p>
+        <div class="session-row">
+          <span class="session-id" id="session-id">no session yet</span>
+          <button id="new-session-btn" class="secondary-btn">New session</button>
+        </div>
+
+        <h2>Document</h2>
+        <p class="hint">Drop a .pdf / .txt / .md file to index it. The agent can only answer from what's ingested here.</p>
+        <label class="dropzone" id="dropzone">
+          <input type="file" id="file-input" accept=".pdf,.txt,.md" hidden />
+          <span id="dropzone-label">Choose a file or drag it here</span>
+        </label>
+        <div class="upload-status" id="upload-status"></div>
+
+        <h2>Strategy</h2>
+        <div class="strategy-picker" id="strategy-picker">
+          <button class="strategy-btn active" data-strategy="function_calling">
+            <strong>Function calling</strong>
+            <span>native tool-use loop</span>
+          </button>
+          <button class="strategy-btn" data-strategy="react">
+            <strong>ReAct</strong>
+            <span>Thought → Action → Observation</span>
+          </button>
+          <button class="strategy-btn" data-strategy="plan_execute">
+            <strong>Plan &amp; execute</strong>
+            <span>decompose, then synthesize</span>
+          </button>
+          <button class="strategy-btn" data-strategy="self_correcting_rag">
+            <strong>Self-correcting RAG</strong>
+            <span>retrieve → grade → verify → retry</span>
+          </button>
+        </div>
+
+        <h2>Ask</h2>
+        <textarea id="query-input" placeholder="e.g. What does the document say about evaluation metrics?" rows="4"></textarea>
+        <button id="send-btn" class="send-btn">Run agent</button>
+      </section>
+
+      <section class="panel trace-panel">
+        <div class="trace-header">
+          <h2>Reasoning trace</h2>
+          <span class="trace-meta" id="trace-meta"></span>
+        </div>
+        <div class="trace-log" id="trace-log">
+          <div class="empty-state">Trace will appear here once you run a query.</div>
+        </div>
+        <div class="final-answer" id="final-answer" hidden>
+          <div class="final-answer-label">Final answer</div>
+          <div class="final-answer-body" id="final-answer-body"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/web/app.js"></script>
+</body>
+</html>
