@@ -6,32 +6,6 @@ pydantic>=2.6
 python-multipart>=0.0.9
 pytest>=8.0
 
-# Real mode (LLM_BACKEND=ollama) needs NO extra pip package -- OllamaLLMClient
-# talks to a local Ollama server using only the standard library (urllib).
-# Install Ollama itself separately: https://ollama.com/download
-
-# Optional extras (project runs fully without them):
-# matplotlib>=3.8              -- for results/benchmark_chart.png
-# langchain-core>=0.2           -- only if you use src/adapters/langchain_adapter.py
-# sentence-transformers>=3.0    -- for the cross-encoder reranker
-#                                   (src/retrieval/reranker.py) AND for the
-#                                   embedding model used by VECTOR_BACKEND=postgres
-#                                   (src/retrieval/embeddings.py). Falls back to
-#                                   BM25+TFIDF-only / a clear startup error,
-#                                   respectively, if not installed.
-
-# Production infra (only needed when you actually turn these backends on --
-# see docker-compose.yml for a ready-to-run Postgres+pgvector+Redis stack):
-# sqlalchemy>=2.0               -- chat history models (db/) AND the pgvector
-#                                   store (retrieval/pgvector_store.py)
-# psycopg2-binary>=2.9           -- Postgres driver
-# pgvector>=0.3                  -- SQLAlchemy Vector column type
-#                                   (VECTOR_BACKEND=postgres)
-# redis>=5.0                     -- session-history read cache
-#                                   (CHAT_HISTORY_BACKEND=postgres); the app
-#                                   runs fine without it too, just always
-#                                   hits Postgres directly (see
-#                                   cache/redis_client.py)
 sqlalchemy>=2.0
 psycopg2-binary>=2.9
 pgvector>=0.3
