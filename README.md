@@ -113,6 +113,4 @@ tests/          unit / integration / regression (35 tests)
 docker-compose.yml   Postgres (pgvector) + Redis + the app
 ```
 
-## 👤 Author
 
-Built as part of an AI Engineering learning track. See [`docs/bugs-found.md`](docs/bugs-found.md) for the debugging process and [`results/benchmark.md`](results/benchmark.md) for the latest strategy comparison.
