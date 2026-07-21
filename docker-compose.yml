@@ -1,0 +1,81 @@
+services:
+  agent-lab:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_BACKEND=${LLM_BACKEND:-mock}
+      # If you run Ollama via the `ollama` service below, use OLLAMA_HOST=http://ollama:11434
+      # (the default here assumes Ollama running on your host machine instead).
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1}
+      # Production storage backends (see .env.example) -- default to
+      # "memory" so `docker compose up agent-lab` alone (no postgres/redis)
+      # still works exactly like before this upgrade.
+      - VECTOR_BACKEND=${VECTOR_BACKEND:-memory}
+      - CHAT_HISTORY_BACKEND=${CHAT_HISTORY_BACKEND:-memory}
+      - POSTGRES_DSN=${POSTGRES_DSN:-postgresql+psycopg2://agentlab:agentlab@postgres:5432/agentlab}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    volumes:
+      - ./data:/app/data
+      - ./results:/app/results
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Optional: run Ollama itself in Docker too, instead of installing it on
+  # your host. Start with `docker compose --profile with-ollama up --build`,
+  # then set OLLAMA_HOST=http://ollama:11434 above (or via .env).
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["with-ollama"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+
+  # Backs VECTOR_BACKEND=postgres (retrieval/pgvector_store.py) and
+  # CHAT_HISTORY_BACKEND=postgres (db/). Both default to "memory" above, so
+  # `docker compose up` without setting those env vars never touches this
+  # service at all -- it only matters once you opt into production storage.
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agentlab
+      POSTGRES_PASSWORD: agentlab
+      POSTGRES_DB: agentlab
+    ports:
+      - "5432:5432"
+    volumes:
+      - agentlab_postgres_data:/var/lib/postgresql/data
+      # ensure_schema() (pgvector_store.py) also runs `CREATE EXTENSION IF
+      # NOT EXISTS vector` itself, so this init script is belt-and-suspenders,
+      # not strictly required.
+      - ./docker/init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentlab"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Read cache in front of Postgres for chat history (cache/redis_client.py).
+  # Entirely optional even when CHAT_HISTORY_BACKEND=postgres -- if this
+  # service is down or REDIS_URL is unset, history reads just always hit
+  # Postgres directly instead of failing.
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - agentlab_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  ollama_models:
+  agentlab_postgres_data:
+  agentlab_redis_data:
