@@ -4,7 +4,7 @@
 
 ![status](https://img.shields.io/badge/tests-35%20passing-brightgreen) ![python](https://img.shields.io/badge/python-3.11%2B-blue) ![cost](https://img.shields.io/badge/real--mode-free%20(Ollama)-success) ![infra](https://img.shields.io/badge/storage-Postgres%20%2B%20pgvector%20%2B%20Redis-336791) ![streaming](https://img.shields.io/badge/API-SSE%20streaming-informational)
 
-🔗 **Live demo:** _\<add your deployed URL or a short Loom/YouTube walkthrough here\>_
+🔗 **Live demo:** https://ai-agent-hybrid-rag.onrender.com/
 
 ---
 
