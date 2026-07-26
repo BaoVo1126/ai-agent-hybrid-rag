@@ -10,17 +10,17 @@
 
 ## 📌 What this is
 
-Drop a PDF/TXT/MD file in, ask questions through a web UI, CLI, or API — the agent retrieves the relevant passages, reasons about the answer, and (in its most advanced mode) **checks its own answer for hallucination before returning it**, retrying automatically if it's wrong. Runs fully offline with zero setup in mock mode, or against a real, free, local model via [Ollama](https://ollama.com) with one environment variable — no API key, no cloud bill. Retrieval defaults to BM25 fused with a real dense FAISS index for accurate semantic search, and documents are split with a paragraph/sentence-aware `RecursiveCharacterTextSplitter` instead of a fixed word count.
+Drop a PDF/TXT/MD file in, ask questions through a web UI, CLI, or API — the agent retrieves the relevant passages, reasons about the answer, and (in its most advanced mode) **checks its own answer for hallucination before returning it**, retrying automatically if it's wrong. Runs fully offline with zero setup in mock mode, or against a real, free, local model via [Ollama](https://ollama.com) with one environment variable. Retrieval defaults to BM25 fused with a real dense FAISS index for accurate semantic search, and documents are split with a paragraph/sentence-aware `RecursiveCharacterTextSplitter` instead of a fixed word count.
 
 ## ✨ What it does
 
-- 🧠 **Four interchangeable reasoning strategies** over the same tools — ReAct, native function-calling, plan-and-execute, and a **self-correcting RAG agent** that grades its own retrieved evidence and re-tries when its answer isn't grounded
-- 🔍 **Hybrid retrieval** — BM25 fused via Reciprocal Rank Fusion with a dense vector index: **FAISS** by default (zero extra infrastructure), or **pgvector** in production — with an optional cross-encoder reranker on top
-- 📄 **Sentence-aware chunking** — a `RecursiveCharacterTextSplitter` tries paragraph, then sentence, then word boundaries before falling back to a raw character cut, so chunks stay coherent instead of being sliced at a fixed word count
-- 💬 **Persistent chat sessions** — full conversation history saved to Postgres, Redis-cached for fast reads
-- ⚡ **Real-time streaming** — `/api/chat/stream` is true Server-Sent Events; the self-correcting agent streams each retrieval/verify/retry step live as it happens, not after the fact
-- 📊 **Built-in benchmark** — quantitatively compares all four strategies on pass rate, latency, groundedness, and cost — not just a demo, a measurement tool
-- 🐳 **One-command production infra** — `docker compose up` brings up Postgres (pgvector) + Redis alongside the app
+- 🧠 **Four interchangeable reasoning strategies** over the same tools — ReAct, native function-calling, plan-and-execute, and a **self-correcting RAG agent** that grades its own retrieved evidence and re-tries when its answer isn't grounded.
+- 🔍 **Hybrid retrieval** — BM25 fused via Reciprocal Rank Fusion with a dense vector index: **FAISS** by default (zero extra infrastructure), or **pgvector** in production — with an optional cross-encoder reranker on top.
+- 📄 **Sentence-aware chunking** — a `RecursiveCharacterTextSplitter` tries paragraph, then sentence, then word boundaries before falling back to a raw character cut, so chunks stay coherent instead of being sliced at a fixed word count.
+- 💬 **Persistent chat sessions** — full conversation history saved to Postgres, Redis-cached for fast reads.
+- ⚡ **Real-time streaming** — `/api/chat/stream` is true Server-Sent Events; the self-correcting agent streams each retrieval/verify/retry step live as it happens, not after the fact.
+- 📊 **Built-in benchmark** — quantitatively compares all four strategies on pass rate, latency, groundedness, and cost — not just a demo, a measurement tool.
+- 🐳 **One-command production infra** — `docker compose up` brings up Postgres (pgvector) + Redis alongside the app.
 
 ## 🛠️ Tech stack
 
