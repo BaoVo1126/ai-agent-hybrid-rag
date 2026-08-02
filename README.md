@@ -179,9 +179,9 @@ uvicorn src.api.main:app --reload   # open http://localhost:8000
 
 Runs fully offline out of the box (`faiss-cpu`/`sentence-transformers` are in `requirements.txt` by default now, for the FAISS retrieval backend). For a real model (free): install [Ollama](https://ollama.com), `ollama pull llama3.1`, set `LLM_BACKEND=ollama`. For production storage: `docker compose up -d postgres redis`, set `VECTOR_BACKEND=postgres` and `CHAT_HISTORY_BACKEND=postgres` — see [Production upgrade](#production-upgrade) below. For workflow orchestration: `docker compose --profile with-n8n up -d`.
 
-## <a name="production-upgrade"></a>🐳 Production upgrade: real storage, not just a demo
+## <a name="production-upgrade"></a>🐳 Production upgrade:
 
-| | Dev default (zero setup) | Production |
+| | Dev default | Production |
 |---|---|---|
 | Vector storage | pickle file, BM25 + FAISS (dense embeddings) | **Postgres + pgvector**, BM25 + dense embeddings |
 | Chat history | in-process dict, lost on restart | **Postgres**, Redis-cached reads |
