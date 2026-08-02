@@ -1,0 +1,146 @@
+{
+  "name": "AI Agent Hybrid RAG - Document Q&A Orchestration",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agent-ask",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Incoming Question (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-40, 260]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.file_url }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "has-file-if",
+      "name": "Has file to ingest?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [180, 260]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.file_url }}",
+        "options": { "response": { "response": { "responseFormat": "file" } } }
+      },
+      "id": "download-file",
+      "name": "Download source file",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENT_API_BASE_URL }}/api/upload",
+        "sendBinaryData": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            { "parameterType": "formBinaryData", "name": "file", "inputDataFieldName": "data" }
+          ]
+        },
+        "options": { "timeout": 120000 }
+      },
+      "id": "upload-to-agent",
+      "name": "Ingest into agent (/api/upload)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [620, 140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENT_API_BASE_URL }}/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"query\": $('Incoming Question (Webhook)').item.json.body.question, \"strategy\": $('Incoming Question (Webhook)').item.json.body.strategy || \"self_correcting_rag\", \"session_id\": $('Incoming Question (Webhook)').item.json.body.session_id } }}",
+        "options": { "timeout": 120000 }
+      },
+      "id": "ask-agent",
+      "name": "Ask agent (/api/chat)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [860, 260]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.final_answer }}",
+              "rightValue": "unverified",
+              "operator": { "type": "string", "operation": "contains" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "low-confidence-if",
+      "name": "Self-check flagged answer?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1080, 260]
+    },
+    {
+      "parameters": {
+        "content": "={{ \"⚠️ Low-confidence answer for query: \" + $('Incoming Question (Webhook)').item.json.body.question }}",
+        "options": {}
+      },
+      "id": "notify-review",
+      "name": "Notify human reviewer",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1300, 160],
+      "notes": "Replace with a Slack/Telegram/Email node in a real deployment -- kept as a no-op placeholder so the workflow imports without extra credentials."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"answer\": $json.final_answer, \"strategy\": $json.strategy, \"latency_seconds\": $json.latency_seconds } }}"
+      },
+      "id": "respond",
+      "name": "Respond to caller",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [1300, 340]
+    }
+  ],
+  "connections": {
+    "Incoming Question (Webhook)": { "main": [[{ "node": "Has file to ingest?", "type": "main", "index": 0 }]] },
+    "Has file to ingest?": {
+      "main": [
+        [{ "node": "Download source file", "type": "main", "index": 0 }],
+        [{ "node": "Ask agent (/api/chat)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Download source file": { "main": [[{ "node": "Ingest into agent (/api/upload)", "type": "main", "index": 0 }]] },
+    "Ingest into agent (/api/upload)": { "main": [[{ "node": "Ask agent (/api/chat)", "type": "main", "index": 0 }]] },
+    "Ask agent (/api/chat)": { "main": [[{ "node": "Self-check flagged answer?", "type": "main", "index": 0 }]] },
+    "Self-check flagged answer?": {
+      "main": [
+        [{ "node": "Notify human reviewer", "type": "main", "index": 0 }, { "node": "Respond to caller", "type": "main", "index": 0 }],
+        [{ "node": "Respond to caller", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": { "instanceId": "ai-agent-hybrid-rag-example" }
+}
