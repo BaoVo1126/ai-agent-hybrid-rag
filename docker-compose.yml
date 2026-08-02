@@ -27,6 +27,20 @@ services:
       - ollama_models:/root/.ollama
 
 
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    profiles: ["with-n8n"]
+    ports:
+      - "5678:5678"
+    environment:
+      - AGENT_API_BASE_URL=http://agent-lab:8000
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n:/home/node/imports:ro
+    depends_on:
+      - agent-lab
+
+
   postgres:
     image: pgvector/pgvector:pg16
     restart: unless-stopped
@@ -64,3 +78,4 @@ volumes:
   ollama_models:
   agentlab_postgres_data:
   agentlab_redis_data:
+  n8n_data:
